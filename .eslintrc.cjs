@@ -13,5 +13,5 @@ module.exports = {
     rules: {
         "prettier/prettier": ["error"]
     },
-    "ignorePatterns": ["**/dist/**"],
+    "ignorePatterns": ["**/dist/**", "jest.config.js"],
 };

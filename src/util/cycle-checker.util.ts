@@ -21,12 +21,12 @@ export class CycleCheckerUtil {
             const cyclicFilesFormatted = `${cyclicFiles.join('\n')}`;
             console.error(`Import cycle found between the following files; first and last file should be equal:`);
             console.log(`${cyclicFilesFormatted}`);
-            process.exit(1);
+            throw new Error();
         }
         const importsOfFile = filePathToImportPathsMap[filePath];
         if (!importsOfFile) {
             console.error(`Couldn't find imports of file "${filePath}", aborting!`);
-            process.exit(1);
+            throw new Error();
         }
         if (importsOfFile.length === 0) {
             return visitedAlready;
