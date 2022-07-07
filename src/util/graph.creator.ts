@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import util from 'util';
 
 export class GraphCreator {
     /**
@@ -13,18 +14,40 @@ export class GraphCreator {
         return new GraphCreatorBuilder();
     }
 
-    public createGraphForDir(): Record<string, string[]> {
-        const fileToImportsMap: Record<string, string[]> = {};
+    public async createGraphForDir(): Promise<Record<string, string[]>> {
         const allFiles: string[] = this.getFilePathsRecursively(this.directoryToCheck)
             .filter((filePath) => /\.ts$/.test(filePath))
             .map((filePath) => this.convertAbsolutePathToPathRelativeToRoot(filePath));
 
-        allFiles.forEach((filePath: string) => {
-            fileToImportsMap[filePath] = this.getAllRelevantImportsRelativeToRoot(filePath);
-        });
-        return fileToImportsMap;
+        return this.getAllRelevantImportsRelativeToRootFromFiles(allFiles);
     }
 
+    private async getAllRelevantImportsRelativeToRootFromFiles(relativeFilePaths: string[]): Promise<Record<string, string[]>> {
+        const relevantImportsRelativeToRoot: Record<string, string[]> = {};
+        const promises: Promise<void>[] = relativeFilePaths.map((relativeFilePath: string) => {
+            const absoluteFilePath = path.join(this.repoRoot, relativeFilePath);
+            return util
+                .promisify(fs.readFile)(absoluteFilePath)
+                .then((fileContent): void => {
+                    const response = fileContent
+                        .toString()
+                        .split('\n')
+                        .filter((line: string) => /from '.*';/.test(line))
+                        .map((fromLine: string): string =>
+                            fromLine
+                                .replace(/.*from/, '')
+                                .replace(/['"]/g, '')
+                                .replace(';', '')
+                        )
+                        .map((relativeOrPackage: string): string => relativeOrPackage.trim())
+                        .filter((relativeOrPackage: string) => this.isRelativeImport(relativeOrPackage));
+                    relevantImportsRelativeToRoot[relativeFilePath] = response;
+                });
+        });
+        return Promise.all(promises).then((): Record<string, string[]> => {
+            return relevantImportsRelativeToRoot;
+        });
+    }
     private getAllRelevantImportsRelativeToRoot(filePath: string): string[] {
         const absoluteFilePath = path.join(this.repoRoot, filePath);
         const allImportsRelativeToFilePath = this.getImportsRelativeToFile(absoluteFilePath);
