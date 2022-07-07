@@ -48,31 +48,6 @@ export class GraphCreator {
             return relevantImportsRelativeToRoot;
         });
     }
-    private getAllRelevantImportsRelativeToRoot(filePath: string): string[] {
-        const absoluteFilePath = path.join(this.repoRoot, filePath);
-        const allImportsRelativeToFilePath = this.getImportsRelativeToFile(absoluteFilePath);
-
-        return allImportsRelativeToFilePath
-            .map((relativeToFile) => path.join(filePath, '../', relativeToFile))
-            .map((filePath) => `${filePath}.ts`);
-    }
-
-    private getImportsRelativeToFile(absoluteFilePath: string): string[] {
-        // TODO Make file-reads nonblocking
-        return fs
-            .readFileSync(absoluteFilePath)
-            .toString()
-            .split('\n')
-            .filter((line: string) => /from '.*';/.test(line))
-            .map((fromLine: string): string =>
-                fromLine
-                    .replace(/.*from/, '')
-                    .replace(/['"]/g, '')
-                    .replace(';', '')
-            )
-            .map((relativeOrPackage: string): string => relativeOrPackage.trim())
-            .filter((relativeOrPackage: string) => this.isRelativeImport(relativeOrPackage));
-    }
 
     private isRelativeImport(packageOrRelativeImport: string): boolean {
         return packageOrRelativeImport.startsWith('.') && !/.json/.test(packageOrRelativeImport);
