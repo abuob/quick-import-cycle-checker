@@ -17,7 +17,8 @@ export class GraphCreator {
     public async createGraphForDir(): Promise<Record<string, string[]>> {
         const allFiles: string[] = this.getFilePathsRecursively(this.directoryToCheck)
             .filter((filePath) => /\.ts$/.test(filePath))
-            .map((filePath) => this.convertAbsolutePathToPathRelativeToRoot(filePath));
+            .map((filePath) => this.convertAbsolutePathToPathRelativeToRoot(filePath))
+            .map((filePath) => (filePath.startsWith('.') ? filePath : '.'.concat(filePath))); //TODO find out why not all relative Path start with ./ at this point anyway.
 
         return this.getAllRelevantImportsRelativeToRootFromFiles(allFiles);
     }
