@@ -16,11 +16,11 @@ describe('CycleCheckerUtil', () => {
                 .withDirectoryToCheck(path.join(__dirname, directory))
                 .build();
 
-            const graphWithCycle = await graphCreator.createGraphForDir();
+            const testGraph = await graphCreator.createGraphForDir();
             if (throws) {
-                expect(() => CycleCheckerUtil.checkForCycles(graphWithCycle)).toThrow();
+                expect(() => CycleCheckerUtil.checkForCycles(testGraph)).toThrow();
             } else {
-                expect(() => CycleCheckerUtil.checkForCycles(graphWithCycle)).not.toThrow();
+                expect(() => CycleCheckerUtil.checkForCycles(testGraph)).not.toThrow();
             }
         });
     });
