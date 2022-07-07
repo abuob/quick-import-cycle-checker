@@ -1,25 +1,33 @@
 {
-  "name": "quick-import-cycle-checker",
-  "version": "0.0.1",
-  "description": "Quick import cycle checker for ES6 imports",
-  "main": "index.ts",
-  "scripts": {
-    "test": "test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/abuob/quick-import-cycle-checker.git"
-  },
-  "keywords": [
-    "import-cycles"
-  ],
-  "author": "abuob",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/abuob/quick-import-cycle-checker/issues"
-  },
-  "homepage": "https://github.com/abuob/quick-import-cycle-checker#readme",
-  "devDependencies": {
-    "typescript": "^4.7.4"
-  }
+    "name": "quick-import-cycle-checker",
+    "version": "0.0.1",
+    "description": "Quick import cycle checker for ES6 imports",
+    "main": "index.ts",
+    "scripts": {
+        "test": "test",
+        "build": "tsc",
+        "lint": "eslint ."
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/abuob/quick-import-cycle-checker.git"
+    },
+    "keywords": [
+        "import-cycles"
+    ],
+    "author": "abuob",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/abuob/quick-import-cycle-checker/issues"
+    },
+    "homepage": "https://github.com/abuob/quick-import-cycle-checker#readme",
+    "devDependencies": {
+        "@types/node": "^18.0.3",
+        "@typescript-eslint/eslint-plugin": "^5.30.5",
+        "@typescript-eslint/parser": "^5.30.5",
+        "eslint": "^8.19.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-prettier": "^4.2.1",
+        "typescript": "^4.7.4"
+    }
 }
