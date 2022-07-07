@@ -24,21 +24,20 @@ export class GraphCreator {
 
     private async getAllRelevantImportsRelativeToRootFromFiles(relativeFilePaths: string[]): Promise<Record<string, string[]>> {
         const relevantImportsRelativeToRoot: Record<string, string[]> = {};
+
+        //Array of Promises for each file in relativeFilePaths
         const promises: Promise<void>[] = relativeFilePaths.map((relativeFilePath: string) => {
             const absoluteFilePath = path.join(this.repoRoot, relativeFilePath);
             return util
                 .promisify(fs.readFile)(absoluteFilePath)
-                .then((fileContent): void => {
+                .then((fileContent): void => { // Get array of lines in file
                     const response = fileContent
                         .toString()
                         .split('\n')
                         .filter((line: string) => /from '.*';/.test(line))
-                        .map((fromLine: string): string =>
-                            fromLine
-                                .replace(/.*from/, '')
-                                .replace(/['"]/g, '')
-                                .replace(';', '')
-                        )
+                        .map((fromLine) => {
+                            return this.parseImportLineToRelativeImportPath(fromLine);
+                        })
                         .map((relativeOrPackage: string): string => relativeOrPackage.trim())
                         .filter((relativeOrPackage: string) => this.isRelativeImport(relativeOrPackage));
                     relevantImportsRelativeToRoot[relativeFilePath] = response;
@@ -47,6 +46,15 @@ export class GraphCreator {
         return Promise.all(promises).then((): Record<string, string[]> => {
             return relevantImportsRelativeToRoot;
         });
+    }
+
+    private parseImportLineToRelativeImportPath(line: string): string {
+        return line
+            .replace(/.*from/, '')
+            .replace(/['"]/g, '')
+            .replace(';', '')
+            .replace(/\s/g, '') //remove all whitespace
+            .concat('.ts');
     }
 
     private isRelativeImport(packageOrRelativeImport: string): boolean {
