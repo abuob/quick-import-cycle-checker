@@ -1,4 +1,4 @@
-import { fileA } from "./file-A";
+import { fileA } from './sub/file-A';
 
 console.log(fileA);
 
