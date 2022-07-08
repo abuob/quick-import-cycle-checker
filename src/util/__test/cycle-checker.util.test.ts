@@ -9,7 +9,7 @@ describe('CycleCheckerUtil', () => {
         ['no-cycle-with-subdir', 'should detect no cycle and handle subdir', false],
         ['simple-cycle-with-subdir', 'should detect a simple cycle and handle subdir', true],
         ['handle-import-with-doublequotes', 'should detect a simple cycle and handle doublequotes gracefully', true]
-    ]
+    ];
 
     tests.forEach(([filePath, description, throws]) => {
         const directory = `./fixtures/${filePath}`;
