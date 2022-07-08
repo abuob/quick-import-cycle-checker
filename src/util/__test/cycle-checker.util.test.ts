@@ -3,10 +3,10 @@ import * as path from 'path';
 import { CycleCheckerUtil } from '../cycle-checker.util';
 
 describe('CycleCheckerUtil', () => {
-    const tests: [string, string, boolean][]= [
+    const tests: [string, string, boolean][] = [
         ['simple-cycle', 'should detect a simple cycle', true],
         ['no-cycle-simple', 'should detect no cycle', false]
-    ]
+    ];
 
     tests.forEach(([filePath, description, throws]) => {
         const directory = `./fixtures/${filePath}`;
