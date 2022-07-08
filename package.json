@@ -33,8 +33,8 @@
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "format": "npm run format:write",
-        "format:check": "prettier --check --loglevel warn \"**/*.+(ts|json|md|js)\"",
-        "format:write": "prettier --write --loglevel warn \"**/*.+(ts|json|md|js)\""
+        "format:check": "prettier --check --loglevel warn \"**/*.+(ts|json|md|js|yml)\"",
+        "format:write": "prettier --write --loglevel warn \"**/*.+(ts|json|md|js|yml)\""
     },
     "devDependencies": {
         "@types/jest": "^28.1.4",
