@@ -31,7 +31,8 @@ export class GraphCreator {
             const absoluteFilePath = path.join(this.repoRoot, relativeFilePath);
             return util
                 .promisify(fs.readFile)(absoluteFilePath)
-                .then((fileContent): void => { // Get array of lines in file
+                .then((fileContent): void => {
+                    // Get array of lines in file
                     const response = fileContent
                         .toString()
                         .split('\n')
@@ -96,9 +97,7 @@ class GraphCreatorBuilder {
 
     public build(): GraphCreator {
         if (!this.directoryToCheck) {
-            console.error('Cannot build GraphCreator, abort!');
-            process.exit(1);
-            return new GraphCreator('invalid-path', 'invalid-path');
+            throw new Error('Cannot build GraphCreator, abort!');
         }
         return new GraphCreator(this.directoryToCheck, this.directoryToCheck);
     }

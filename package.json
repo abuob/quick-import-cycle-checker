@@ -2,12 +2,9 @@
     "name": "quick-import-cycle-checker",
     "version": "0.0.1",
     "description": "Quick import cycle checker for ES6 imports",
-    "main": "index.ts",
-    "scripts": {
-        "test": "jest",
-        "build": "tsc",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix"
+    "main": "dist/index.js",
+    "engines": {
+        "node": ">= 14"
     },
     "repository": {
         "type": "git",
@@ -16,12 +13,29 @@
     "keywords": [
         "import-cycles"
     ],
+    "bin": {
+        "quick-import-cycle-checker": "dist/index.js"
+    },
+    "files": [
+        "dist/**/*",
+        "schema.json",
+        "graph-display-template.html"
+    ],
     "author": "abuob",
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/abuob/quick-import-cycle-checker/issues"
     },
     "homepage": "https://github.com/abuob/quick-import-cycle-checker#readme",
+    "scripts": {
+        "test": "jest",
+        "build": "tsc",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "format": "npm run format:write",
+        "format:check": "prettier --check --loglevel warn \"**/*.+(ts|json|md|js)\"",
+        "format:write": "prettier --write --loglevel warn \"**/*.+(ts|json|md|js)\""
+    },
     "devDependencies": {
         "@types/jest": "^28.1.4",
         "@types/node": "^18.0.3",
@@ -31,6 +45,7 @@
         "eslint-config-prettier": "^8.5.0",
         "eslint-plugin-prettier": "^4.2.1",
         "jest": "^28.1.2",
+        "prettier": "^2.7.1",
         "ts-jest": "^28.0.5",
         "typescript": "^4.7.4"
     }

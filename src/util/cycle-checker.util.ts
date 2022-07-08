@@ -23,7 +23,7 @@ export class CycleCheckerUtil {
             console.log(`${cyclicFilesFormatted}`);
             throw new Error();
         }
-        const importsOfFile = filePathToImportPathsMap[filePath];
+        const importsOfFile: string[] | undefined = filePathToImportPathsMap[filePath];
         if (!importsOfFile) {
             console.error(`Couldn't find imports of file "${filePath}", aborting!`);
             throw new Error();
@@ -31,7 +31,7 @@ export class CycleCheckerUtil {
         if (importsOfFile.length === 0) {
             return visitedAlready;
         }
-        return importsOfFile.reduce((prev, curr) => {
+        return importsOfFile.reduce((prev: string[], curr: string): string[] => {
             const visited = CycleCheckerUtil.checkForCycleRecursively(
                 filePathToImportPathsMap,
                 curr,
