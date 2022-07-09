@@ -38,7 +38,7 @@
     },
     "pre-commit": [
         "lint",
-        "format:check",
+        "format",
         "test"
     ],
     "devDependencies": {
