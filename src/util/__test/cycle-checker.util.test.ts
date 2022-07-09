@@ -3,7 +3,6 @@ import * as path from 'path';
 import { CycleCheckerUtil } from '../cycle-checker.util';
 
 describe('CycleCheckerUtil', () => {
-
     it('should detect a simple cycle and handle subdir', async () => {
         const graphCreator: GraphCreator = GraphCreator.builder()
             .withRepoRoot(path.join(__dirname, './fixtures/simple-cycle-with-subdir'))
