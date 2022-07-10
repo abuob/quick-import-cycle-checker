@@ -35,7 +35,6 @@ export class GraphCreator {
                 });
         });
         return Promise.all(allFilesHandledPromises).then((): Record<string, string[]> => {
-            console.log('absoluteFilePathImportGraph', absoluteFilePathImportGraph);
             return absoluteFilePathImportGraph;
         });
     }
@@ -85,7 +84,7 @@ export class GraphCreator {
     }
 
     private resolveModule(rawImportLocation: string): string {
-        if (/.ts$/.test(rawImportLocation)) {
+        if (/[.]ts$/.test(rawImportLocation)) {
             return rawImportLocation;
         }
         // Currently hard-coded to just support typescript for the time being.
