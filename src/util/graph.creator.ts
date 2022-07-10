@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import util from 'util';
+import { ImportLocation, RelativeFileImport } from '../types/import-location.types';
 
 export class GraphCreator {
     /**
@@ -15,58 +16,89 @@ export class GraphCreator {
     }
 
     public async createGraphForDir(): Promise<Record<string, string[]>> {
-        const allFiles: string[] = this.directoriesToCheck
-            .map((directoryToCheck: string): string[] => {
-                return this.getFilePathsRecursively(directoryToCheck)
-                    .filter((filePath) => /\.ts$/.test(filePath))
-                    .map((filePath) => this.convertAbsolutePathToPathRelativeToRoot(filePath))
-                    .map((filePath) => (filePath.startsWith('.') ? filePath : '.'.concat(filePath)));
-            })
-            .reduce((prev: string[], curr: string[]): string[] => prev.concat(curr), []);
-
-        //TODO find out why not all relative Path start with ./ at this point anyway.
-
-        return this.getAllRelevantImportsRelativeToRootFromFiles(allFiles);
-    }
-
-    private async getAllRelevantImportsRelativeToRootFromFiles(relativeFilePaths: string[]): Promise<Record<string, string[]>> {
-        const relevantImportsRelativeToRoot: Record<string, string[]> = {};
-
-        //Array of Promises for each file in relativeFilePaths
-        const promises: Promise<void>[] = relativeFilePaths.map((relativeFilePath: string) => {
-            const absoluteFilePath = path.join(this.repoRoot, relativeFilePath);
-            return util
-                .promisify(fs.readFile)(absoluteFilePath)
-                .then((fileContent): void => {
-                    // Get array of lines in file
-                    const response = fileContent
-                        .toString()
-                        .split('\n')
-                        .filter((line: string) => /from '.*';/.test(line))
-                        .map((fromLine) => {
-                            return this.parseImportLineToRelativeImportPath(fromLine);
-                        })
-                        .map((relativeOrPackage: string): string => relativeOrPackage.trim())
-                        .filter((relativeOrPackage: string) => this.isRelativeImport(relativeOrPackage));
-                    relevantImportsRelativeToRoot[relativeFilePath] = response;
+        const absoluteFilePathImportGraph: Record<string, string[]> = {};
+        const allAbsoluteFilePaths: string[] = this.getAllFilesThatNeedCheck();
+        const allFilesHandledPromises: Promise<void>[] = allAbsoluteFilePaths.map((absoluteFilePath: string): Promise<void> => {
+            return this.getImportLocationLiteralsFromFile(absoluteFilePath)
+                .then((importLocationLiterals: string[]): ImportLocation[] => {
+                    return importLocationLiterals.map((importLocationLiteral: string): ImportLocation => {
+                        return this.parseRawImportLocation(absoluteFilePath, importLocationLiteral);
+                    });
+                })
+                .then((importLocations: ImportLocation[]): void => {
+                    absoluteFilePathImportGraph[absoluteFilePath] = importLocations
+                        .filter(
+                            (importLocation: ImportLocation): importLocation is RelativeFileImport =>
+                                importLocation.type === 'relative-file-import'
+                        )
+                        .map((importLocation) => importLocation.resolvedAbsoluteFilePath);
                 });
         });
-        return Promise.all(promises).then((): Record<string, string[]> => {
-            return relevantImportsRelativeToRoot;
+        return Promise.all(allFilesHandledPromises).then((): Record<string, string[]> => {
+            console.log('absoluteFilePathImportGraph', absoluteFilePathImportGraph);
+            return absoluteFilePathImportGraph;
         });
     }
 
-    private parseImportLineToRelativeImportPath(line: string): string {
+    private getAllFilesThatNeedCheck(): string[] {
+        return this.directoriesToCheck
+            .map((directoryToCheck: string): string[] => {
+                return this.getFilePathsRecursively(directoryToCheck).filter((filePath) => /\.ts$/.test(filePath));
+            })
+            .reduce((prev: string[], curr: string[]): string[] => prev.concat(curr), []);
+    }
+
+    private async getImportLocationLiteralsFromFile(absoluteFilePath: string): Promise<string[]> {
+        return util
+            .promisify(fs.readFile)(absoluteFilePath)
+            .then((fileContent): string[] => {
+                return fileContent
+                    .toString()
+                    .split('\n')
+                    .filter((line: string) => /[ ]from[ ]['"].*['"]/.test(line))
+                    .map((fromLine) => {
+                        return this.getImportLocationLiteral(fromLine);
+                    });
+            });
+    }
+
+    private parseRawImportLocation(absoluteFilePathOfImporter: string, rawImportLocation: string): ImportLocation {
+        if (/.json$/.test(rawImportLocation)) {
+            return {
+                type: 'json-module-import',
+                rawLiteral: rawImportLocation
+            };
+        }
+        if (rawImportLocation.startsWith('.')) {
+            // If this string is path/to/file, we need to resolve relative to path/to, hence the "../" to get rid of "file"
+            const fileDirectory: string = path.join(absoluteFilePathOfImporter, '../');
+            return {
+                type: 'relative-file-import',
+                rawLiteral: rawImportLocation,
+                resolvedAbsoluteFilePath: path.join(fileDirectory, this.resolveModule(rawImportLocation))
+            };
+        }
+        return {
+            type: 'package-import',
+            packageName: rawImportLocation
+        };
+    }
+
+    private resolveModule(rawImportLocation: string): string {
+        if (/.ts$/.test(rawImportLocation)) {
+            return rawImportLocation;
+        }
+        // Currently hard-coded to just support typescript for the time being.
+        // TODO: Make customizable/configurable
+        return `${rawImportLocation}.ts`;
+    }
+
+    private getImportLocationLiteral(line: string): string {
         return line
             .replace(/.*from/, '')
             .replace(/['"]/g, '')
             .replace(';', '')
-            .replace(/\s/g, '') //remove all whitespace
-            .concat('.ts');
-    }
-
-    private isRelativeImport(packageOrRelativeImport: string): boolean {
-        return packageOrRelativeImport.startsWith('.') && !/.json/.test(packageOrRelativeImport);
+            .trim();
     }
 
     private getFilePathsRecursively(absoluteDirPath: string): string[] {
@@ -80,10 +112,6 @@ export class GraphCreator {
                     : [path.join(absoluteDirPath, curr)];
                 return prev.concat(currentEntry);
             }, []);
-    }
-
-    private convertAbsolutePathToPathRelativeToRoot(absoluteFileOrDirPath: string) {
-        return absoluteFileOrDirPath.replace(this.repoRoot, '');
     }
 }
 

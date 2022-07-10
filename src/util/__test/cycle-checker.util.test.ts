@@ -20,7 +20,7 @@ describe('CycleCheckerUtil', () => {
             .build();
 
         const graphWithCycle = await graphCreator.createGraphForDir();
-        expect(() => CycleCheckerUtil.checkForCycles(graphWithCycle)).not.toThrow();
+        expect(() => CycleCheckerUtil.checkForCycles(graphWithCycle)).toThrow();
     });
 
     it('should detect no cycle', async () => {
