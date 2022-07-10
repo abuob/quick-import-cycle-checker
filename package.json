@@ -32,7 +32,8 @@
         "lint:fix": "eslint . --fix",
         "format": "npm run format:write",
         "format:check": "prettier --check --loglevel warn \"**/*.+(ts|json|md|js|yml)\"",
-        "format:write": "prettier --write --loglevel warn \"**/*.+(ts|json|md|js|yml)\""
+        "format:write": "prettier --write --loglevel warn \"**/*.+(ts|json|md|js|yml)\"",
+        "prepublishOnly": "npm run format:check && npm run lint && npm run test && npm run build"
     },
     "pre-commit": [
         "lint",
