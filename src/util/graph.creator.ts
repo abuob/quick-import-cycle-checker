@@ -6,19 +6,25 @@ export class GraphCreator {
     /**
      *
      * @param repoRoot: absolute path
-     * @param directoryToCheck: absolute path
+     * @param directoriesToCheck: absolute paths
      */
-    constructor(private repoRoot: string, private directoryToCheck: string) {}
+    constructor(private repoRoot: string, private directoriesToCheck: string[]) {}
 
     public static builder() {
         return new GraphCreatorBuilder();
     }
 
     public async createGraphForDir(): Promise<Record<string, string[]>> {
-        const allFiles: string[] = this.getFilePathsRecursively(this.directoryToCheck)
-            .filter((filePath) => /\.ts$/.test(filePath))
-            .map((filePath) => this.convertAbsolutePathToPathRelativeToRoot(filePath))
-            .map((filePath) => (filePath.startsWith('.') ? filePath : '.'.concat(filePath))); //TODO find out why not all relative Path start with ./ at this point anyway.
+        const allFiles: string[] = this.directoriesToCheck
+            .map((directoryToCheck: string): string[] => {
+                return this.getFilePathsRecursively(directoryToCheck)
+                    .filter((filePath) => /\.ts$/.test(filePath))
+                    .map((filePath) => this.convertAbsolutePathToPathRelativeToRoot(filePath))
+                    .map((filePath) => (filePath.startsWith('.') ? filePath : '.'.concat(filePath)));
+            })
+            .reduce((prev: string[], curr: string[]): string[] => prev.concat(curr), []);
+
+        //TODO find out why not all relative Path start with ./ at this point anyway.
 
         return this.getAllRelevantImportsRelativeToRootFromFiles(allFiles);
     }
@@ -82,23 +88,23 @@ export class GraphCreator {
 }
 
 class GraphCreatorBuilder {
-    public repoRoot: string | null = null;
-    public directoryToCheck: string | null = null;
+    private repoRoot: string | null = null;
+    private directoriesToCheck: string[] = [];
 
     public withRepoRoot(repoRoot: string): GraphCreatorBuilder {
         this.repoRoot = repoRoot;
         return this;
     }
 
-    public withDirectoryToCheck(absoluteDirectoryPath: string): GraphCreatorBuilder {
-        this.directoryToCheck = absoluteDirectoryPath;
+    public withDirectoriesToCheck(...absoluteDirectoryPaths: string[]): GraphCreatorBuilder {
+        this.directoriesToCheck = absoluteDirectoryPaths;
         return this;
     }
 
     public build(): GraphCreator {
-        if (!this.directoryToCheck) {
+        if (!this.directoriesToCheck || !this.repoRoot) {
             throw new Error('Cannot build GraphCreator, abort!');
         }
-        return new GraphCreator(this.directoryToCheck, this.directoryToCheck);
+        return new GraphCreator(this.repoRoot, this.directoriesToCheck);
     }
 }
