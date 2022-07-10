@@ -6,7 +6,7 @@ export async function main() {
     const directoryToCheck = __dirname;
     const repoRoot = __dirname;
 
-    const graphCreator: GraphCreator = GraphCreator.builder().withRepoRoot(directoryToCheck).withDirectoryToCheck(repoRoot).build();
+    const graphCreator: GraphCreator = GraphCreator.builder().withRepoRoot(directoryToCheck).withDirectoriesToCheck(repoRoot).build();
 
     const importGraph = await graphCreator.createGraphForDir();
     CycleCheckerUtil.checkForCycles(importGraph);
