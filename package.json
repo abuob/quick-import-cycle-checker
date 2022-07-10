@@ -3,6 +3,9 @@
     "version": "0.0.1",
     "description": "Quick import cycle checker for ES6 imports",
     "main": "dist/index.js",
+    "bin": {
+        "quick-import-cycle-checker": "dist/bin.js"
+    },
     "engines": {
         "node": ">= 14"
     },
@@ -13,13 +16,8 @@
     "keywords": [
         "import-cycles"
     ],
-    "bin": {
-        "quick-import-cycle-checker": "dist/index.js"
-    },
     "files": [
-        "dist/**/*",
-        "schema.json",
-        "graph-display-template.html"
+        "dist/**/*"
     ],
     "author": "abuob",
     "license": "MIT",

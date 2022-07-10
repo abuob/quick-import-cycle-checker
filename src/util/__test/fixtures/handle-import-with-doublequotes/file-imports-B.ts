@@ -1,5 +1,5 @@
-import { fileB } from './file-imports-A';
+import { fileImportsA } from './file-imports-A';
 
-console.log(fileB);
+console.log(fileImportsA);
 
 export const fileImportsB = 'FileImportsB';
