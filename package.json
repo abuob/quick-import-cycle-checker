@@ -20,6 +20,9 @@
         "dist/**/*"
     ],
     "author": "abuob",
+    "contributors": [
+        "santschi"
+    ],
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/abuob/quick-import-cycle-checker/issues"
