@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
-import { main } from './src/main';
+import { QuickImportCycleChecker } from './src/quick-import-cycle-checker';
 
-main();
+// TODO Make this more elegant/configurable
+const directoryToCheck = process.cwd();
+const rootDirectory = process.cwd();
+
+QuickImportCycleChecker.forDirectories(directoryToCheck).withRootDirectory(rootDirectory).checkForCycles();

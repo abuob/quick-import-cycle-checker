@@ -1,7 +1,7 @@
 {
     "name": "quick-import-cycle-checker",
     "version": "0.0.3",
-    "description": "Quick import cycle checker for ES6 imports",
+    "description": "Quick import cycle checker for ES6 imports in TypeScript projects",
     "main": "dist/index.js",
     "bin": {
         "quick-import-cycle-checker": "dist/bin.js"
