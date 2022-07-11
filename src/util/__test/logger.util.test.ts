@@ -63,18 +63,18 @@ describe('LoggerUtil', () => {
                     undefinedNodeReferences: [],
                     notPartOfCycle: []
                 },
-                'path/to/root/'
+                'path/to/root'
             );
             const expected: string =
                 'Found 2 cycles!\n' +
                 '--- Cycle #1:\n' +
-                'src/a.ts\n' +
-                'src/b.ts\n' +
-                'src/a.ts\n' +
+                './src/a.ts\n' +
+                './src/b.ts\n' +
+                './src/a.ts\n' +
                 '--- Cycle #2:\n' +
-                'src/c.ts\n' +
-                'src/d.ts\n' +
-                'src/c.ts';
+                './src/c.ts\n' +
+                './src/d.ts\n' +
+                './src/c.ts';
             expect(actual).toEqual(expected);
         });
     });

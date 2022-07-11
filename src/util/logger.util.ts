@@ -6,7 +6,8 @@ export class LoggerUtil {
             if (!absoluteDirectoryRoot) {
                 return cycle;
             }
-            return cycle.map((absoluteFilePath: string) => absoluteFilePath.replace(absoluteDirectoryRoot, ''));
+            const absoluteDirectoryRootWithoutEndingSlash: string = absoluteDirectoryRoot.replace(/[\/]+$/, '');
+            return cycle.map((absoluteFilePath: string) => absoluteFilePath.replace(absoluteDirectoryRootWithoutEndingSlash, '.'));
         });
         if (cycles.length === 0) {
             return 'No cycle found.';
