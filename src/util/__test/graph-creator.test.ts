@@ -21,17 +21,9 @@ describe('GraphCreator', () => {
                 // @ts-expect-error private; only require access for testing
                 new GraphCreator('', []).getImportLocationLiteralsFromFile(absoluteFilePath);
 
-            const filePath1: string = path.join(__dirname, '/fixtures/handle-import-with-doublequotes/file-imports-A.ts');
+            const filePath1: string = path.join(__dirname, '/fixtures/file-with-some-imports.ts');
             const result1: string[] = await getImportLocationLiteralsFromFile(filePath1);
-            expect(result1).toStrictEqual(['./file-imports-B']);
-
-            const filePath2: string = path.join(__dirname, '/fixtures/simple-cycle-with-subdir/file-imports-A.ts');
-            const result2: string[] = await getImportLocationLiteralsFromFile(filePath2);
-            expect(result2).toStrictEqual(['./sub/file-A']);
-
-            const filePath3: string = path.join(__dirname, '/fixtures/simple-cycle-with-subdir/sub/file-A.ts');
-            const result3: string[] = await getImportLocationLiteralsFromFile(filePath3);
-            expect(result3).toStrictEqual(['../file-imports-B']);
+            expect(result1).toStrictEqual(['./file-A', 'path', 'typescript', './file-B']);
         });
     });
 
