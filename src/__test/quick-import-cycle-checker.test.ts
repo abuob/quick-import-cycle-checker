@@ -1,29 +1,40 @@
 import * as path from 'path';
 import { QuickImportCycleChecker } from '../quick-import-cycle-checker';
+import { CycleValidationResult } from '../types/cycle-validation-result.types';
 
 describe('CycleCheckerUtil', () => {
-    async function checkDirectory(directoryPath: string): Promise<void> {
+    async function getImportCycles(directoryPath: string): Promise<string[][]> {
         const absoluteDirectoryPath: string = path.join(__dirname, directoryPath);
-        return QuickImportCycleChecker.forDirectories(absoluteDirectoryPath).withRootDirectory(absoluteDirectoryPath).checkForCycles();
+        return QuickImportCycleChecker.forDirectories(absoluteDirectoryPath)
+            .withRootDirectory(absoluteDirectoryPath)
+            .createImportGraph()
+            .searchForImportCycles()
+            .getCycleValiationResult()
+            .then((validationResult: CycleValidationResult): string[][] => validationResult.cycles);
     }
 
     it('should detect a simple cycle', async () => {
-        await expect(checkDirectory('./fixtures/simple-cycle')).rejects.toThrow();
+        const cycles: string[][] = await getImportCycles('./fixtures/simple-cycle');
+        expect(cycles).toHaveLength(1);
     });
 
     it('should detect a simple cycle and handle subdir', async () => {
-        await expect(checkDirectory('./fixtures/simple-cycle-with-subdir')).rejects.toThrow();
+        const cycles: string[][] = await getImportCycles('./fixtures/simple-cycle-with-subdir');
+        expect(cycles).toHaveLength(1);
     });
 
     it('should detect a simple cycle and handle doublequotes gracefully', async () => {
-        await expect(checkDirectory('./fixtures/handle-import-with-doublequotes')).rejects.toThrow();
+        const cycles: string[][] = await getImportCycles('./fixtures/handle-import-with-doublequotes');
+        expect(cycles).toHaveLength(1);
     });
 
     it('should not throw if there is no cycle', async () => {
-        await expect(checkDirectory('./fixtures/no-cycle-simple')).resolves.not.toThrow();
+        const cycles: string[][] = await getImportCycles('./fixtures/no-cycle-simple');
+        expect(cycles).toHaveLength(0);
     });
 
     it('should not throw if there is no cycle, including subdirs', async () => {
-        await expect(checkDirectory('./fixtures/no-cycle-with-subdir')).resolves.not.toThrow();
+        const cycles: string[][] = await getImportCycles('./fixtures/no-cycle-with-subdir');
+        expect(cycles).toHaveLength(0);
     });
 });

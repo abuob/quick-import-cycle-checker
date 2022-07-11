@@ -57,5 +57,9 @@ QuickImportCycleChecker.forDirectories(
     path.join(__dirname, './some/other/folder')
 )
     .withRootDirectory(__dirname)
-    .checkForCycles();
+    .createImportGraph()
+    .searchForImportCycles()
+    .reportCyclesAndExit();
 ```
+
+Alternatively, instead of `reportCyclesAndExit`, handle the promise yourself by using `getCycleValiationResult`.

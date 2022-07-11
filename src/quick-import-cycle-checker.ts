@@ -48,7 +48,7 @@ export class QuickImportCycleChecker {
         }
         this.importCycleValidationResultPromise.then((validationResult: CycleValidationResult): void => {
             const cycles: string[][] = validationResult.cycles;
-            const loggingOutput: string = LoggerUtil.createCycleResultLog(validationResult);
+            const loggingOutput: string = LoggerUtil.createCycleResultLog(validationResult, this.absoluteRootDirectoryPath);
             if (cycles.length === 0) {
                 // eslint-disable-next-line no-console
                 console.info(loggingOutput);
@@ -66,14 +66,5 @@ export class QuickImportCycleChecker {
             throw new Error('Import Graph has not been searched for cycles yet, abort!');
         }
         return this.importCycleValidationResultPromise;
-    }
-
-    public async checkForCycles(): Promise<void> {
-        const graphCreator: GraphCreator = GraphCreator.builder()
-            .withDirectoriesToCheck(...this.absoluteDirectoryPaths)
-            .build();
-        return graphCreator.createImportGraph().then((importGraph: Record<string, string[]>): void => {
-            CycleCheckerUtil.checkForCycles(importGraph);
-        });
     }
 }
