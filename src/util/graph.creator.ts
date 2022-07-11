@@ -4,18 +4,13 @@ import util from 'util';
 import { ImportLocation, RelativeFileImport } from '../types/import-location.types';
 
 export class GraphCreator {
-    /**
-     *
-     * @param repoRoot: absolute path
-     * @param directoriesToCheck: absolute paths
-     */
-    constructor(private repoRoot: string, private directoriesToCheck: string[]) {}
+    constructor(private directoriesToCheckAbsolutePaths: string[]) {}
 
     public static builder() {
         return new GraphCreatorBuilder();
     }
 
-    public async createGraphForDir(): Promise<Record<string, string[]>> {
+    public async createImportGraph(): Promise<Record<string, string[]>> {
         const absoluteFilePathImportGraph: Record<string, string[]> = {};
         const allAbsoluteFilePaths: string[] = this.getAllFilesThatNeedCheck();
         const allFilesHandledPromises: Promise<void>[] = allAbsoluteFilePaths.map((absoluteFilePath: string): Promise<void> => {
@@ -40,7 +35,7 @@ export class GraphCreator {
     }
 
     private getAllFilesThatNeedCheck(): string[] {
-        return this.directoriesToCheck
+        return this.directoriesToCheckAbsolutePaths
             .map((directoryToCheck: string): string[] => {
                 return this.getFilePathsRecursively(directoryToCheck).filter((filePath) => /\.ts$/.test(filePath));
             })
@@ -115,13 +110,7 @@ export class GraphCreator {
 }
 
 class GraphCreatorBuilder {
-    private repoRoot: string | null = null;
     private directoriesToCheck: string[] = [];
-
-    public withRepoRoot(repoRoot: string): GraphCreatorBuilder {
-        this.repoRoot = repoRoot;
-        return this;
-    }
 
     public withDirectoriesToCheck(...absoluteDirectoryPaths: string[]): GraphCreatorBuilder {
         this.directoriesToCheck = absoluteDirectoryPaths;
@@ -129,9 +118,9 @@ class GraphCreatorBuilder {
     }
 
     public build(): GraphCreator {
-        if (!this.directoriesToCheck || !this.repoRoot) {
-            throw new Error('Cannot build GraphCreator, abort!');
+        if (this.directoriesToCheck.length === 0) {
+            throw new Error('No directories provided, abort!');
         }
-        return new GraphCreator(this.repoRoot, this.directoriesToCheck);
+        return new GraphCreator(this.directoriesToCheck);
     }
 }
