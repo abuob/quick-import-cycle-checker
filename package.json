@@ -31,11 +31,11 @@
     "scripts": {
         "test": "jest",
         "build": "tsc",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix",
+        "lint": "eslint . -c .eslintrc.cjs",
+        "lint:fix": "eslint . -c .eslintrc.cjs --fix",
         "format": "npm run format:write",
-        "format:check": "prettier --check --loglevel warn \"**/*.+(ts|json|md|js|yml)\"",
-        "format:write": "prettier --write --loglevel warn \"**/*.+(ts|json|md|js|yml)\"",
+        "format:check": "prettier --check --loglevel warn \"**/*.+(ts|json|md|js|cjs|yml)\"",
+        "format:write": "prettier --write --loglevel warn \"**/*.+(ts|json|md|js|cjs|yml)\"",
         "prepublishOnly": "npm run format:check && npm run lint && npm run test && npm run build"
     },
     "pre-commit": [

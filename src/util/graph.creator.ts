@@ -6,7 +6,7 @@ import { ImportLocation, RelativeFileImport } from '../types/import-location.typ
 export class GraphCreator {
     constructor(private directoriesToCheckAbsolutePaths: string[]) {}
 
-    public static builder() {
+    public static builder(): GraphCreatorBuilder {
         return new GraphCreatorBuilder();
     }
 

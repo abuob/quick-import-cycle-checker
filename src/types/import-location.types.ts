@@ -1,4 +1,4 @@
-export type ImportLocation = RelativeFileImport | PackageImport | JsonModuleImport;
+export type ImportLocation = JsonModuleImport | PackageImport | RelativeFileImport;
 
 export interface RelativeFileImport {
     type: 'relative-file-import';

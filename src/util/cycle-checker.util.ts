@@ -19,12 +19,15 @@ export class CycleCheckerUtil {
         if (nodesInDfsTraversal.includes(filePath)) {
             const cyclicFiles = nodesInDfsTraversal.slice(nodesInDfsTraversal.indexOf(filePath)).concat(filePath);
             const cyclicFilesFormatted = `${cyclicFiles.join('\n')}`;
+            // eslint-disable-next-line no-console
             console.error(`Import cycle found between the following files; first and last file should be equal:`);
+            // eslint-disable-next-line no-console
             console.log(`${cyclicFilesFormatted}`);
             throw new Error();
         }
         const importsOfFile: string[] | undefined = filePathToImportPathsMap[filePath];
         if (!importsOfFile) {
+            // eslint-disable-next-line no-console
             console.error(`Couldn't find imports of file "${filePath}", aborting!`);
             throw new Error();
         }
