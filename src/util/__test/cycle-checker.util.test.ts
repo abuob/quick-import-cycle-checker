@@ -12,7 +12,7 @@ describe('CycleCheckerUtil', () => {
             };
             const expected: CycleValidationResult = {
                 undefinedNodeReferences: [],
-                notPartOfCycle: ['a', 'b', 'c', 'd'],
+                notPartOfCycle: ['d', 'c', 'b', 'a'],
                 cycles: []
             };
             expect(CycleCheckerUtil.searchForCycles(graph)).toEqual(expected);
@@ -58,7 +58,7 @@ describe('CycleCheckerUtil', () => {
             };
             const expected: CycleValidationResult = {
                 undefinedNodeReferences: ['TOTALLY-NOT-DEFINED'],
-                notPartOfCycle: ['a', 'b'],
+                notPartOfCycle: ['b', 'a'],
                 cycles: []
             };
             expect(CycleCheckerUtil.searchForCycles(graph)).toEqual(expected);

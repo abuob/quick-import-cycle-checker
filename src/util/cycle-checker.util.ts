@@ -9,13 +9,7 @@ export class CycleCheckerUtil {
         };
         return Object.keys(graph).reduce((prev: CycleValidationResult, curr: string): CycleValidationResult => {
             const nextResult: CycleValidationResult = this.searchGraphForCyclesRecursively(graph, curr, prev, []);
-            if (!CycleCheckerUtil.isPartOfExistingCycle(curr, nextResult)) {
-                return {
-                    ...nextResult,
-                    notPartOfCycle: [...nextResult.notPartOfCycle, curr]
-                };
-            }
-            return nextResult;
+            return CycleCheckerUtil.addNodeToExistingResult(curr, nextResult);
         }, initialCycleValidationResult);
     }
 
@@ -25,10 +19,8 @@ export class CycleCheckerUtil {
         currentResult: CycleValidationResult,
         nodesInDfsTraversal: string[]
     ): CycleValidationResult {
-        if (currentResult.notPartOfCycle.includes(currentNode)) {
-            return currentResult;
-        }
         if (
+            CycleCheckerUtil.isAlreadyNotPartOfACycle(currentNode, currentResult) ||
             CycleCheckerUtil.isPartOfExistingCycle(currentNode, currentResult) ||
             CycleCheckerUtil.isAlreadyUnknownNode(currentNode, currentResult)
         ) {
@@ -49,8 +41,28 @@ export class CycleCheckerUtil {
             };
         }
         return connectedNodes.reduce((prev: CycleValidationResult, curr: string): CycleValidationResult => {
-            return this.searchGraphForCyclesRecursively(graph, curr, prev, [...nodesInDfsTraversal, currentNode]);
+            const nextResult: CycleValidationResult = this.searchGraphForCyclesRecursively(graph, curr, prev, [
+                ...nodesInDfsTraversal,
+                currentNode
+            ]);
+            return CycleCheckerUtil.addNodeToExistingResult(curr, nextResult);
         }, currentResult);
+    }
+
+    private static addNodeToExistingResult(node: string, cycleValidationResult: CycleValidationResult): CycleValidationResult {
+        if (CycleCheckerUtil.isPartOfExistingCycle(node, cycleValidationResult)) {
+            return cycleValidationResult;
+        }
+        if (CycleCheckerUtil.isAlreadyUnknownNode(node, cycleValidationResult)) {
+            return cycleValidationResult;
+        }
+        if (CycleCheckerUtil.isAlreadyNotPartOfACycle(node, cycleValidationResult)) {
+            return cycleValidationResult;
+        }
+        return {
+            ...cycleValidationResult,
+            notPartOfCycle: [...cycleValidationResult.notPartOfCycle, node]
+        };
     }
 
     private static isPartOfExistingCycle(node: string, cycleValidationResult: CycleValidationResult): boolean {
@@ -59,5 +71,9 @@ export class CycleCheckerUtil {
 
     private static isAlreadyUnknownNode(node: string, cycleValidationResult: CycleValidationResult): boolean {
         return cycleValidationResult.undefinedNodeReferences.includes(node);
+    }
+
+    private static isAlreadyNotPartOfACycle(node: string, cycleValidationResult: CycleValidationResult): boolean {
+        return cycleValidationResult.notPartOfCycle.includes(node);
     }
 }

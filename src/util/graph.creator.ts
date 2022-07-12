@@ -4,7 +4,7 @@ import util from 'util';
 import { ImportLocation, RelativeFileImport } from '../types/import-location.types';
 
 export class GraphCreator {
-    constructor(private directoriesToCheckAbsolutePaths: string[]) {}
+    constructor(private directoriesToCheckAbsolutePaths: string[], private exclusionRegexes: RegExp[]) {}
 
     public static builder(): GraphCreatorBuilder {
         return new GraphCreatorBuilder();
@@ -37,7 +37,12 @@ export class GraphCreator {
     private getAllFilesThatNeedCheck(): string[] {
         return this.directoriesToCheckAbsolutePaths
             .map((directoryToCheck: string): string[] => {
-                return this.getFilePathsRecursively(directoryToCheck).filter((filePath) => /\.ts$/.test(filePath));
+                return this.getFilePathsRecursively(directoryToCheck)
+                    .filter((filePath) => /\.ts$/.test(filePath))
+                    .filter(
+                        (absoluteFilePath: string) =>
+                            !this.exclusionRegexes.some((exclusionRegExp: RegExp) => exclusionRegExp.test(absoluteFilePath))
+                    );
             })
             .reduce((prev: string[], curr: string[]): string[] => prev.concat(curr), []);
     }
@@ -111,9 +116,15 @@ export class GraphCreator {
 
 class GraphCreatorBuilder {
     private directoriesToCheck: string[] = [];
+    private exclusionRegexes: RegExp[] = [];
 
     public withDirectoriesToCheck(...absoluteDirectoryPaths: string[]): GraphCreatorBuilder {
         this.directoriesToCheck = absoluteDirectoryPaths;
+        return this;
+    }
+
+    public withExclusions(exclusionRegexes: RegExp[]): GraphCreatorBuilder {
+        this.exclusionRegexes = exclusionRegexes;
         return this;
     }
 
@@ -121,6 +132,6 @@ class GraphCreatorBuilder {
         if (this.directoriesToCheck.length === 0) {
             throw new Error('No directories provided, abort!');
         }
-        return new GraphCreator(this.directoriesToCheck);
+        return new GraphCreator(this.directoriesToCheck, this.exclusionRegexes);
     }
 }

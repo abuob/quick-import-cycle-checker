@@ -59,7 +59,7 @@ QuickImportCycleChecker.forDirectories(
     .withRootDirectory(__dirname)
     .createImportGraph()
     .searchForImportCycles()
-    .reportCyclesAndExit();
+    .reportCyclesAndExit(); // Note that reportCyclesAndExit returns a Promise<void>.
 ```
 
 Alternatively, instead of `reportCyclesAndExit`, handle the promise yourself by using `getCycleValiationResult`.

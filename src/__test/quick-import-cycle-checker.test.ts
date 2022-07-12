@@ -3,10 +3,11 @@ import { QuickImportCycleChecker } from '../quick-import-cycle-checker';
 import { CycleValidationResult } from '../types/cycle-validation-result.types';
 
 describe('CycleCheckerUtil', () => {
-    async function getImportCycles(directoryPath: string): Promise<string[][]> {
+    async function getImportCycles(directoryPath: string, exclusionRegexes: RegExp[] = []): Promise<string[][]> {
         const absoluteDirectoryPath: string = path.join(__dirname, directoryPath);
         return QuickImportCycleChecker.forDirectories(absoluteDirectoryPath)
             .withRootDirectory(absoluteDirectoryPath)
+            .withExclusions(exclusionRegexes)
             .createImportGraph()
             .searchForImportCycles()
             .getCycleValiationResult()
@@ -26,6 +27,11 @@ describe('CycleCheckerUtil', () => {
     it('should detect a simple cycle and handle doublequotes gracefully', async () => {
         const cycles: string[][] = await getImportCycles('./fixtures/handle-import-with-doublequotes');
         expect(cycles).toHaveLength(1);
+    });
+
+    it('should not report a cycle if the directory containing the cycle is excluded', async () => {
+        const cycles: string[][] = await getImportCycles('./fixtures/simple-cycle-with-subdir', [/[\/]sub[\/]/]);
+        expect(cycles).toHaveLength(0);
     });
 
     it('should not throw if there is no cycle', async () => {

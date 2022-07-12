@@ -6,6 +6,7 @@ import { LoggerUtil } from './util/logger.util';
 export class QuickImportCycleChecker {
     private absoluteDirectoryPaths: string[] = [];
     private absoluteRootDirectoryPath: string | null = null;
+    private exclusionRegexes: RegExp[] = [];
     private importGraphPromise: Promise<Record<string, string[]>> | null = null;
     private importCycleValidationResultPromise: Promise<CycleValidationResult> | null = null;
 
@@ -22,9 +23,15 @@ export class QuickImportCycleChecker {
         return this;
     }
 
+    public withExclusions(directoryExclusionRegExes: RegExp[]): QuickImportCycleChecker {
+        this.exclusionRegexes = directoryExclusionRegExes;
+        return this;
+    }
+
     public createImportGraph(): QuickImportCycleChecker {
         const graphCreator: GraphCreator = GraphCreator.builder()
             .withDirectoriesToCheck(...this.absoluteDirectoryPaths)
+            .withExclusions(this.exclusionRegexes)
             .build();
         this.importGraphPromise = graphCreator.createImportGraph();
         return this;
@@ -42,11 +49,11 @@ export class QuickImportCycleChecker {
         return this;
     }
 
-    public reportCyclesAndExit(): void {
+    public reportCyclesAndExit(): Promise<void> {
         if (!this.importCycleValidationResultPromise) {
             throw new Error('Import Graph has not been searched for cycles yet, abort!');
         }
-        this.importCycleValidationResultPromise.then((validationResult: CycleValidationResult): void => {
+        return this.importCycleValidationResultPromise.then((validationResult: CycleValidationResult): void => {
             const cycles: string[][] = validationResult.cycles;
             const loggingOutput: string = LoggerUtil.createCycleResultLog(validationResult, this.absoluteRootDirectoryPath);
             if (cycles.length === 0) {
