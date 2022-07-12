@@ -43,6 +43,9 @@ and all subdirectories, and then check if there are cycles.
 If there are any, it will exit non-zero and print the files that are part of the cycle.
 Otherwise, it will not print anything and exit with zero.
 
+However, this is (currently) not configurable in any way,
+hence it is recommended to use the programmatic approach as described below.
+
 ### Programmatically
 
 It can be used programmatically e.g. in node as follows:
