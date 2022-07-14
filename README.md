@@ -60,7 +60,7 @@ QuickImportCycleChecker.forDirectories(
     path.join(__dirname, './some/folder'),
     path.join(__dirname, './some/other/folder')
 )
-    .withExclusions([/[\/]dist[\/]/, /[\/]generated[\/]/]) // node_modules are ignored by default
+    .withExclusions([/[\\/]dist[\\/]/, /[\\/]generated[\\/]/]) // node_modules are ignored by default
     .withRootDirectory(__dirname)
     .createImportGraph()
     .searchForImportCycles()
