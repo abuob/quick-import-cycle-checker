@@ -17,7 +17,7 @@ export class GraphCreator {
             return this.getImportLocationLiteralsFromFile(absoluteFilePath)
                 .then((importLocationLiterals: string[]): ImportLocation[] => {
                     return importLocationLiterals.map((importLocationLiteral: string): ImportLocation => {
-                        return this.parseRawImportLocation(absoluteFilePath, importLocationLiteral);
+                        return GraphCreator.parseRawImportLocation(absoluteFilePath, importLocationLiteral);
                     });
                 })
                 .then((importLocations: ImportLocation[]): void => {
@@ -34,6 +34,74 @@ export class GraphCreator {
         });
     }
 
+    private static prepareFileContent(fileContent: string): string {
+        return fileContent
+            .replace(/[/][*](.|\n|\r)*?[*][/]/g, '') // Strip block-comments
+            .replace(/export(.|\n|\r)+?from/g, ''); // Strip export-from statements;
+    }
+
+    private static searchRawImportLocations(preparedFileContent: string): string[] {
+        return preparedFileContent
+            .split('\n')
+            .filter((line: string) => /[ ]from[ ]['"].*['"]/.test(line))
+            .map((fromLine: string): string | null => {
+                return GraphCreator.getImportLocationLiteral(fromLine);
+            })
+            .reduce((prev: string[], curr: string | null): string[] => (curr ? prev.concat(curr) : prev), []);
+    }
+
+    private static getImportLocationLiteral(line: string): string | null {
+        const strippedFromComments: string = line.replace(/[/][/].*/, '').trim();
+        if (!/from/.test(strippedFromComments)) {
+            return null;
+        }
+        return strippedFromComments
+            .replace(/.*from/, '')
+            .replace(/['"]/g, '')
+            .replace(';', '')
+            .trim();
+    }
+
+    private static parseRawImportLocation(absoluteFilePathOfImporter: string, rawImportLocation: string): ImportLocation {
+        if (/.json$/.test(rawImportLocation)) {
+            return {
+                type: 'json-module-import',
+                rawLiteral: rawImportLocation
+            };
+        }
+        if (rawImportLocation.startsWith('.')) {
+            // If this string is path/to/file, we need to resolve relative to path/to, hence the "../" to get rid of "file"
+            const fileDirectory: string = path.join(absoluteFilePathOfImporter, '../');
+            return {
+                type: 'relative-file-import',
+                rawLiteral: rawImportLocation,
+                resolvedAbsoluteFilePath: path.join(fileDirectory, GraphCreator.resolveModule(rawImportLocation))
+            };
+        }
+        return {
+            type: 'package-import',
+            packageName: rawImportLocation
+        };
+    }
+
+    private static resolveModule(rawImportLocation: string): string {
+        if (/[.]ts$/.test(rawImportLocation)) {
+            return rawImportLocation;
+        }
+        // Currently hard-coded to just support typescript for the time being.
+        // TODO: Make customizable/configurable
+        return `${rawImportLocation}.ts`;
+    }
+
+    private async getImportLocationLiteralsFromFile(absoluteFilePath: string): Promise<string[]> {
+        return util
+            .promisify(fs.readFile)(absoluteFilePath)
+            .then((fileContent): string[] => {
+                const preparedFileContent: string = GraphCreator.prepareFileContent(fileContent.toString());
+                return GraphCreator.searchRawImportLocations(preparedFileContent);
+            });
+    }
+
     private getAllFilesThatNeedCheck(): string[] {
         return this.directoriesToCheckAbsolutePaths
             .map((directoryToCheck: string): string[] => {
@@ -47,61 +115,8 @@ export class GraphCreator {
             .reduce((prev: string[], curr: string[]): string[] => prev.concat(curr), []);
     }
 
-    private async getImportLocationLiteralsFromFile(absoluteFilePath: string): Promise<string[]> {
-        return util
-            .promisify(fs.readFile)(absoluteFilePath)
-            .then((fileContent): string[] => {
-                return fileContent
-                    .toString()
-                    .split('\n')
-                    .filter((line: string) => /[ ]from[ ]['"].*['"]/.test(line))
-                    .map((fromLine) => {
-                        return this.getImportLocationLiteral(fromLine);
-                    });
-            });
-    }
-
-    private parseRawImportLocation(absoluteFilePathOfImporter: string, rawImportLocation: string): ImportLocation {
-        if (/.json$/.test(rawImportLocation)) {
-            return {
-                type: 'json-module-import',
-                rawLiteral: rawImportLocation
-            };
-        }
-        if (rawImportLocation.startsWith('.')) {
-            // If this string is path/to/file, we need to resolve relative to path/to, hence the "../" to get rid of "file"
-            const fileDirectory: string = path.join(absoluteFilePathOfImporter, '../');
-            return {
-                type: 'relative-file-import',
-                rawLiteral: rawImportLocation,
-                resolvedAbsoluteFilePath: path.join(fileDirectory, this.resolveModule(rawImportLocation))
-            };
-        }
-        return {
-            type: 'package-import',
-            packageName: rawImportLocation
-        };
-    }
-
-    private resolveModule(rawImportLocation: string): string {
-        if (/[.]ts$/.test(rawImportLocation)) {
-            return rawImportLocation;
-        }
-        // Currently hard-coded to just support typescript for the time being.
-        // TODO: Make customizable/configurable
-        return `${rawImportLocation}.ts`;
-    }
-
-    private getImportLocationLiteral(line: string): string {
-        return line
-            .replace(/.*from/, '')
-            .replace(/['"]/g, '')
-            .replace(';', '')
-            .trim();
-    }
-
     private getFilePathsRecursively(absoluteDirPath: string): string[] {
-        const excludedDirectories: string[] = ['node_modules', 'dist', '.git'];
+        const excludedDirectories: string[] = ['node_modules', '.git'];
         const directoryContent: string[] = fs.readdirSync(absoluteDirPath);
         return directoryContent
             .filter((fileOrDirectory: string) => !excludedDirectories.includes(fileOrDirectory))

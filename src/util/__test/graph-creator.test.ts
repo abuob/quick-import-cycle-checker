@@ -6,12 +6,22 @@ describe('GraphCreator', () => {
     describe('getImportLocationLiteral', () => {
         it('should extract the raw content of the import location in a `... from "<...>"`', () => {
             // @ts-expect-error private; only require access for testing
-            const getImportLocationLiteral: (line: string) => string = new GraphCreator('', []).getImportLocationLiteral;
+            const getImportLocationLiteral: (line: string) => string = GraphCreator.getImportLocationLiteral;
             expect(getImportLocationLiteral("import {} from 'some-package';")).toEqual('some-package');
             expect(getImportLocationLiteral("import {} from '@stuff/some-package';")).toEqual('@stuff/some-package');
             expect(getImportLocationLiteral("import {} from '../../relative/path';")).toEqual('../../relative/path');
             expect(getImportLocationLiteral("import {} from './file';")).toEqual('./file');
             expect(getImportLocationLiteral("import {} from '../some-thing';")).toEqual('../some-thing');
+        });
+    });
+
+    describe('prepareFileContent', () => {
+        it('should strip block comments and remove export statements sufficiently to not contain "from" anymore', () => {
+            // @ts-expect-error private; only require access for testing
+            const prepareFileContent: (line: string) => string = GraphCreator.prepareFileContent;
+            expect(prepareFileContent('/* some block comment */')).toEqual('');
+            expect(prepareFileContent('something/* some block comment */stuff')).toEqual('somethingstuff');
+            expect(prepareFileContent("blah; export * from './somewhere';blah")).toEqual("blah;  './somewhere';blah");
         });
     });
 
@@ -23,7 +33,7 @@ describe('GraphCreator', () => {
 
             const filePath1: string = path.join(__dirname, '/fixtures/file-with-some-imports.ts');
             const result1: string[] = await getImportLocationLiteralsFromFile(filePath1);
-            expect(result1).toStrictEqual(['./file-A', 'path', 'typescript', './file-B']);
+            expect(result1).toStrictEqual(['./file-A', './module-followed-by-comment', 'path', './file-B']);
         });
     });
 
@@ -34,7 +44,7 @@ describe('GraphCreator', () => {
                 rawImportLocation: string
             ): ImportLocation =>
                 // @ts-expect-error private; only require access for testing
-                new GraphCreator('', []).parseRawImportLocation(absoluteFilePathOfImporter, rawImportLocation);
+                GraphCreator.parseRawImportLocation(absoluteFilePathOfImporter, rawImportLocation);
 
             const actual1 = parseRawImportLocation('/my/absolute/file/path/some-file.ts', './some-other-file.ts');
             const expected1: RelativeFileImport = {
