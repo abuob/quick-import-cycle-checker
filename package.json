@@ -31,6 +31,7 @@
     "scripts": {
         "test": "jest",
         "build": "tsc",
+        "cli": "./dist/bin.js",
         "lint": "eslint . -c .eslintrc.cjs",
         "lint:fix": "eslint . -c .eslintrc.cjs --fix",
         "format": "npm run format:write",
