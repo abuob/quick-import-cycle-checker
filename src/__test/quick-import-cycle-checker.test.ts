@@ -43,4 +43,14 @@ describe('CycleCheckerUtil', () => {
         const cycles: string[][] = await getImportCycles('./fixtures/no-cycle-with-subdir');
         expect(cycles).toHaveLength(0);
     });
+
+    it('should not throw if there is no cycle, including subdirs, with implicit index.ts', async () => {
+        const cycles: string[][] = await getImportCycles('./fixtures/simple-cycle-with-subdir-indexts');
+        expect(cycles).toHaveLength(1);
+    });
+
+    it('should not throw if there is no cycle, including subdirs, with implicit index.ts', async () => {
+        const cycles: string[][] = await getImportCycles('./fixtures/simple-cycle-with-subdir-indexts-with-backslash');
+        expect(cycles).toHaveLength(1);
+    });
 });

@@ -43,7 +43,7 @@ export class GraphCreator {
     private static searchRawImportLocations(preparedFileContent: string): string[] {
         return preparedFileContent
             .split('\n')
-            .filter((line: string) => /[ ]from[ ]['"].*['"]/.test(line))
+            .filter((line: string) => /[ ]from[ ]['"].*['"]/.test(line)) // import begins with .
             .map((fromLine: string): string | null => {
                 return GraphCreator.getImportLocationLiteral(fromLine);
             })
@@ -75,7 +75,7 @@ export class GraphCreator {
             return {
                 type: 'relative-file-import',
                 rawLiteral: rawImportLocation,
-                resolvedAbsoluteFilePath: path.join(fileDirectory, GraphCreator.resolveModule(rawImportLocation))
+                resolvedAbsoluteFilePath: path.join(fileDirectory, GraphCreator.resolveModule(rawImportLocation, fileDirectory))
             };
         }
         return {
@@ -84,12 +84,35 @@ export class GraphCreator {
         };
     }
 
-    private static resolveModule(rawImportLocation: string): string {
+    private static resolveModule(rawImportLocation: string, originDirectory: string): string {
         if (/[.]ts$/.test(rawImportLocation)) {
+            // import ends in .ts => has to be a file
             return rawImportLocation;
+        }
+
+        if (
+            fs.existsSync(path.join(originDirectory, rawImportLocation, '.ts')) &&
+            fs.lstatSync(path.join(originDirectory, rawImportLocation, '.ts')).isFile()
+        ) {
+            return `${rawImportLocation}.ts`;
+        }
+
+        // Not a .ts file
+        if (
+            fs.existsSync(path.join(originDirectory, rawImportLocation)) &&
+            fs.lstatSync(path.join(originDirectory, rawImportLocation)).isDirectory()
+        ) {
+            if (
+                fs.existsSync(path.join(originDirectory, rawImportLocation, '/index.ts')) &&
+                fs.lstatSync(path.join(originDirectory, rawImportLocation, '/index.ts')).isFile()
+            ) {
+                return `${rawImportLocation}/index.ts`;
+            }
         }
         // Currently hard-coded to just support typescript for the time being.
         // TODO: Make customizable/configurable
+
+        // TODO: Module resolution if there is a non path import like from 'moduleA'
         return `${rawImportLocation}.ts`;
     }
 
