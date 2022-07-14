@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import util from 'util';
 import { ImportLocation, RelativeFileImport } from '../types/import-location.types';
+import { exit } from 'process';
 
 export class GraphCreator {
     constructor(private directoriesToCheckAbsolutePaths: string[], private exclusionRegexes: RegExp[]) {}
@@ -115,13 +116,17 @@ export class GraphCreator {
 
     private getFilePathsRecursively(absoluteDirPath: string): string[] {
         const excludedDirectories: string[] = ['node_modules', '.git'];
+        if (!fs.existsSync(absoluteDirPath)) {
+            // eslint-disable-next-line no-console
+            console.error('Directory does not exist: %s', absoluteDirPath);
+            exit(404);
+        }
         const directoryContent: string[] = fs.readdirSync(absoluteDirPath);
         return directoryContent
             .filter((fileOrDirectory: string) => !excludedDirectories.includes(fileOrDirectory))
             .reduce((prev: string[], curr: string): string[] => {
-                const currentEntry = fs.statSync(path.join(absoluteDirPath, curr)).isDirectory()
-                    ? this.getFilePathsRecursively(path.join(absoluteDirPath, curr))
-                    : [path.join(absoluteDirPath, curr)];
+                const dirPath = path.join(absoluteDirPath, curr);
+                const currentEntry = fs.statSync(dirPath).isDirectory() ? this.getFilePathsRecursively(dirPath) : [dirPath];
                 return prev.concat(currentEntry);
             }, []);
     }
