@@ -19,6 +19,7 @@ Currently, quick-import-cycle-checker does _not_ support the following:
 -   Imports relative to the `baseUrl` [as described here](https://www.typescriptlang.org/tsconfig#baseUrl).
     The imports _must_ be relative, using `./` and `../`, otherwise it will not work.
 -   In short: Every import that does not start with a `.` is currently being ignored.
+-   Dynamic imports are currently ignored.
 
 ## Usage
 
@@ -59,6 +60,7 @@ QuickImportCycleChecker.forDirectories(
     path.join(__dirname, './some/folder'),
     path.join(__dirname, './some/other/folder')
 )
+    .withExclusions([/[\/]dist[\/]/, /[\/]generated[\/]/]) // node_modules are ignored by default
     .withRootDirectory(__dirname)
     .createImportGraph()
     .searchForImportCycles()
