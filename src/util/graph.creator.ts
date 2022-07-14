@@ -37,7 +37,7 @@ export class GraphCreator {
     private static prepareFileContent(fileContent: string): string {
         return fileContent
             .replace(/[/][*](.|\n|\r)*?[*][/]/g, '') // Strip block-comments
-            .replace(/export(.|\n|\r)+?from/g, ''); // Strip export-from statements;
+            .replace(/export(?!([ ]+(const|class|function|interface|type|default|enum|let|abstract)[ ]))(.|\n|\r\n)+?from[ ]/g, ''); // Strip export-from statements;
     }
 
     private static searchRawImportLocations(preparedFileContent: string): string[] {

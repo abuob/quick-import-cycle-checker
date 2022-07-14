@@ -21,7 +21,10 @@ describe('GraphCreator', () => {
             const prepareFileContent: (line: string) => string = GraphCreator.prepareFileContent;
             expect(prepareFileContent('/* some block comment */')).toEqual('');
             expect(prepareFileContent('something/* some block comment */stuff')).toEqual('somethingstuff');
-            expect(prepareFileContent("blah; export * from './somewhere';blah")).toEqual("blah;  './somewhere';blah");
+            expect(prepareFileContent("blah; export * from './somewhere';blah")).toEqual("blah; './somewhere';blah");
+            expect(
+                prepareFileContent("blah;\nexport * from './somewhere';\nimport {} from './blah'; export * from './elsewhere'; blah")
+            ).toEqual("blah;\n'./somewhere';\nimport {} from './blah'; './elsewhere'; blah");
         });
     });
 
