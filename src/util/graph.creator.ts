@@ -5,7 +5,7 @@ import { ImportLocation, RelativeFileImport } from '../types/import-location.typ
 import { exit } from 'process';
 
 export class GraphCreator {
-    constructor(private directoriesToCheckAbsolutePaths: string[], private exclusionRegexes: RegExp[]) {}
+    constructor(private directoriesToCheckAbsolutePaths: string[], private exclusionRegexps: RegExp[]) {}
 
     public static builder(): GraphCreatorBuilder {
         return new GraphCreatorBuilder();
@@ -108,7 +108,7 @@ export class GraphCreator {
                     .filter((filePath) => /\.ts$/.test(filePath))
                     .filter(
                         (absoluteFilePath: string) =>
-                            !this.exclusionRegexes.some((exclusionRegExp: RegExp) => exclusionRegExp.test(absoluteFilePath))
+                            !this.exclusionRegexps.some((exclusionRegExp: RegExp) => exclusionRegExp.test(absoluteFilePath))
                     );
             })
             .reduce((prev: string[], curr: string[]): string[] => prev.concat(curr), []);
@@ -134,15 +134,15 @@ export class GraphCreator {
 
 class GraphCreatorBuilder {
     private directoriesToCheck: string[] = [];
-    private exclusionRegexes: RegExp[] = [];
+    private exclusionRegexps: RegExp[] = [];
 
     public withDirectoriesToCheck(...absoluteDirectoryPaths: string[]): GraphCreatorBuilder {
         this.directoriesToCheck = absoluteDirectoryPaths;
         return this;
     }
 
-    public withExclusions(exclusionRegexes: RegExp[]): GraphCreatorBuilder {
-        this.exclusionRegexes = exclusionRegexes;
+    public withExclusions(exclusionRegexps: RegExp[]): GraphCreatorBuilder {
+        this.exclusionRegexps = exclusionRegexps;
         return this;
     }
 
@@ -150,6 +150,6 @@ class GraphCreatorBuilder {
         if (this.directoriesToCheck.length === 0) {
             throw new Error('No directories provided, abort!');
         }
-        return new GraphCreator(this.directoriesToCheck, this.exclusionRegexes);
+        return new GraphCreator(this.directoriesToCheck, this.exclusionRegexps);
     }
 }
