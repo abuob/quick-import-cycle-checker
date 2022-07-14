@@ -44,8 +44,18 @@ and all subdirectories, and then check if there are cycles.
 If there are any, it will exit non-zero and print the files that are part of the cycle.
 Otherwise, it will not print anything and exit with zero.
 
-However, this is (currently) not configurable in any way,
-hence it is recommended to use the programmatic approach as described below.
+If you wish to overwrite the default settings you can pass the following parameters:
+
+```bash
+--checkDirectories #comma-separated list of absolute paths
+--root # absolute path
+--exclusions # comma-separated list of RegExp
+```
+
+```bash
+# example
+npm run quick-import-cycle-checker --checkDirectories=/first/Path,/Second/Path
+```
 
 ### Programmatically
 
@@ -67,4 +77,4 @@ QuickImportCycleChecker.forDirectories(
     .reportCyclesAndExit(); // Note that reportCyclesAndExit returns a Promise<void>.
 ```
 
-Alternatively, instead of `reportCyclesAndExit`, handle the promise yourself by using `getCycleValiationResult`.
+Alternatively, instead of `reportCyclesAndExit`, handle the promise yourself by using `getCycleValidationResult`.
