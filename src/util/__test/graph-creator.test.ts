@@ -16,15 +16,11 @@ describe('GraphCreator', () => {
     });
 
     describe('prepareFileContent', () => {
-        it('should strip block comments and remove export statements sufficiently to not contain "from" anymore', () => {
+        it('should strip block comments', () => {
             // @ts-expect-error private; only require access for testing
             const prepareFileContent: (line: string) => string = GraphCreator.prepareFileContent;
             expect(prepareFileContent('/* some block comment */')).toEqual('');
             expect(prepareFileContent('something/* some block comment */stuff')).toEqual('somethingstuff');
-            expect(prepareFileContent("blah; export * from './somewhere';blah")).toEqual("blah; './somewhere';blah");
-            expect(
-                prepareFileContent("blah;\nexport * from './somewhere';\nimport {} from './blah'; export * from './elsewhere'; blah")
-            ).toEqual("blah;\n'./somewhere';\nimport {} from './blah'; './elsewhere'; blah");
         });
     });
 
@@ -36,7 +32,7 @@ describe('GraphCreator', () => {
 
             const filePath1: string = path.join(__dirname, '/fixtures/file-with-some-imports.ts');
             const result1: string[] = await getImportLocationLiteralsFromFile(filePath1);
-            expect(result1).toStrictEqual(['./file-A', './module-followed-by-comment', 'path', './file-B']);
+            expect(result1).toStrictEqual(['./file-A', './module-followed-by-comment', 'path', './module-to-be-exported', './file-B']);
         });
     });
 
