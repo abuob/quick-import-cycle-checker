@@ -1,3 +1,5 @@
 **/fixtures/**
 dist
 .idea
+**/.vscode
+**/.devcontainer
