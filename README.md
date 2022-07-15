@@ -47,14 +47,14 @@ Otherwise, it will not print anything and exit with zero.
 If you wish to overwrite the default settings you can pass the following parameters:
 
 ```bash
---checkDirectories #comma-separated list of absolute paths
+--checkDirs # list of relative or absolute paths
 --root # absolute path
---exclusions # comma-separated list of RegExp
+--exclusions # list of RegExp
 ```
 
 ```bash
 # example
-npm run quick-import-cycle-checker --checkDirectories=/first/Path,/Second/Path
+npm run quick-import-cycle-checker -- --checkDirs= '/first/Path' '/Second/Path'
 ```
 
 ### Programmatically
