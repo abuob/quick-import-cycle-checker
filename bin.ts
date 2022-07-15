@@ -11,7 +11,7 @@ export interface cliSettings {
 
 const settings: cliSettings = {
     checkDirectories: process.env.npm_config_checkdirectories?.split(',').map((directory: string): string => {
-        if (/^\.\//.test(directory)) {
+        if (/^[\.]+\//.test(directory)) {
             return path.join(process.cwd(), directory);
         }
         return directory;
