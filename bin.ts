@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { QuickImportCycleChecker } from './src/quick-import-cycle-checker';
-import path from 'path';
+import { parseArgs } from './src/util/parse-arguments.util';
 
 export interface cliSettings {
     checkDirectories: string[];
@@ -9,19 +9,11 @@ export interface cliSettings {
     exclusions: RegExp[];
 }
 
+const argumentsParsed = parseArgs(process.argv);
 const settings: cliSettings = {
-    checkDirectories: process.env.npm_config_checkdirectories?.split(',').map((directory: string): string => {
-        if (/^[\.]+\//.test(directory)) {
-            return path.join(process.cwd(), directory);
-        }
-        return directory;
-    }) ?? [process.cwd()],
-    root: process.env.npm_config_root ?? process.cwd(),
-    exclusions: process.env.npm_config_exclusions
-        ? process.env.npm_config_exclusions?.split(',').map((str: string): RegExp => {
-              return new RegExp(str);
-          })
-        : []
+    checkDirectories: argumentsParsed['--checkDirs'] ?? [process.cwd()],
+    root: argumentsParsed['--root'] ? argumentsParsed['--root'][0] : process.cwd(),
+    exclusions: argumentsParsed['--exclusions'] ? argumentsParsed['--exclusions'].map((str) => new RegExp(str)) : []
 };
 
 QuickImportCycleChecker.forDirectories(...settings.checkDirectories)
