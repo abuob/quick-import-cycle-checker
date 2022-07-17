@@ -54,7 +54,7 @@ If you wish to overwrite the default settings you can pass the following paramet
 
 ```bash
 # example
-npm run quick-import-cycle-checker -- --checkDirs= '/first/Path' '/Second/Path'
+npm run quick-import-cycle-checker -- --checkDirs '/first/Path' '/Second/Path'
 ```
 
 ### Programmatically
