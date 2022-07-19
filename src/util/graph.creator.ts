@@ -118,11 +118,6 @@ export class GraphCreator {
 
     private getFilePathsRecursively(absoluteDirPath: string): string[] {
         const excludedDirectories: string[] = ['node_modules', '.git'];
-        if (!fs.existsSync(absoluteDirPath)) {
-            // eslint-disable-next-line no-console
-            console.error('Directory does not exist: %s', absoluteDirPath);
-            exit(404);
-        }
         const directoryContent: string[] = fs.readdirSync(absoluteDirPath);
         return directoryContent
             .filter((fileOrDirectory: string) => !excludedDirectories.includes(fileOrDirectory))
@@ -139,6 +134,13 @@ class GraphCreatorBuilder {
     private exclusionRegexps: RegExp[] = [];
 
     public withDirectoriesToCheck(...absoluteDirectoryPaths: string[]): GraphCreatorBuilder {
+        absoluteDirectoryPaths.map((absolutePath: string): void => {
+            if (!fs.existsSync(absolutePath)) {
+                // eslint-disable-next-line no-console
+                console.error('Directory does not exist: %s', absolutePath);
+                exit(404);
+            }
+        });
         this.directoriesToCheck = absoluteDirectoryPaths;
         return this;
     }
