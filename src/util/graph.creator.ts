@@ -42,7 +42,7 @@ export class GraphCreator {
     private static searchRawImportLocations(preparedFileContent: string): string[] {
         return preparedFileContent
             .split('\n')
-            .filter((line: string) => /[ ]from[ ]['"].*['"]/.test(line)) // import begins with .
+            .filter((line: string) => /[ ]from[ ]['"].*['"]/.test(line))
             .map((fromLine: string): string | null => {
                 return GraphCreator.getImportLocationLiteral(fromLine);
             })
@@ -83,6 +83,7 @@ export class GraphCreator {
         };
     }
 
+    // Currently hard-coded to just support typescript for the time being.
     private static resolveModule(rawImportLocation: string, originDirectory: string): string {
         if (/[.]ts$/.test(rawImportLocation)) {
             // import ends in .ts => has to be a file
@@ -108,7 +109,6 @@ export class GraphCreator {
                 return `${rawImportLocation}/index.ts`;
             }
         }
-        // Currently hard-coded to just support typescript for the time being.
         // TODO: Make customizable/configurable
 
         // TODO: Module resolution if there is a non path import like from 'moduleA'
