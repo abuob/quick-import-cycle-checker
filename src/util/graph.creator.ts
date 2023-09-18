@@ -3,6 +3,7 @@ import fs from 'fs';
 import util from 'util';
 import { ImportLocation, RelativeFileImport } from '../types/import-location.types';
 import { exit } from 'process';
+import { PromiseCreator, PromiseQueue } from './promise-queue';
 
 export class GraphCreator {
     constructor(private directoriesToCheckAbsolutePaths: string[], private exclusionRegexps: RegExp[]) {}
@@ -14,23 +15,41 @@ export class GraphCreator {
     public async createImportGraph(): Promise<Record<string, string[]>> {
         const absoluteFilePathImportGraph: Record<string, string[]> = {};
         const allAbsoluteFilePaths: string[] = this.getAllFilesThatNeedCheck();
-        const allFilesHandledPromises: Promise<void>[] = allAbsoluteFilePaths.map((absoluteFilePath: string): Promise<void> => {
-            return this.getImportLocationLiteralsFromFile(absoluteFilePath)
-                .then((importLocationLiterals: string[]): ImportLocation[] => {
-                    return importLocationLiterals.map((importLocationLiteral: string): ImportLocation => {
-                        return GraphCreator.parseRawImportLocation(absoluteFilePath, importLocationLiteral);
+        // const allFilesHandledPromises: Promise<void>[] = allAbsoluteFilePaths.map((absoluteFilePath: string): Promise<void> => {
+        //     return this.getImportLocationLiteralsFromFile(absoluteFilePath)
+        //         .then((importLocationLiterals: string[]): ImportLocation[] => {
+        //             return importLocationLiterals.map((importLocationLiteral: string): ImportLocation => {
+        //                 return GraphCreator.parseRawImportLocation(absoluteFilePath, importLocationLiteral);
+        //             });
+        //         })
+        //         .then((importLocations: ImportLocation[]): void => {
+        //             absoluteFilePathImportGraph[absoluteFilePath] = importLocations
+        //                 .filter(
+        //                     (importLocation: ImportLocation): importLocation is RelativeFileImport =>
+        //                         importLocation.type === 'relative-file-import'
+        //                 )
+        //                 .map((importLocation) => importLocation.resolvedAbsoluteFilePath);
+        //         });
+        // });
+        const allFileHandledPromiseCreators: PromiseCreator[] = allAbsoluteFilePaths.map((absoluteFilePath: string): PromiseCreator => {
+            return (): Promise<void> =>
+                this.getImportLocationLiteralsFromFile(absoluteFilePath)
+                    .then((importLocationLiterals: string[]): ImportLocation[] => {
+                        return importLocationLiterals.map((importLocationLiteral: string): ImportLocation => {
+                            return GraphCreator.parseRawImportLocation(absoluteFilePath, importLocationLiteral);
+                        });
+                    })
+                    .then((importLocations: ImportLocation[]): void => {
+                        absoluteFilePathImportGraph[absoluteFilePath] = importLocations
+                            .filter(
+                                (importLocation: ImportLocation): importLocation is RelativeFileImport =>
+                                    importLocation.type === 'relative-file-import'
+                            )
+                            .map((importLocation) => importLocation.resolvedAbsoluteFilePath);
                     });
-                })
-                .then((importLocations: ImportLocation[]): void => {
-                    absoluteFilePathImportGraph[absoluteFilePath] = importLocations
-                        .filter(
-                            (importLocation: ImportLocation): importLocation is RelativeFileImport =>
-                                importLocation.type === 'relative-file-import'
-                        )
-                        .map((importLocation) => importLocation.resolvedAbsoluteFilePath);
-                });
         });
-        return Promise.all(allFilesHandledPromises).then((): Record<string, string[]> => {
+        const promiseQueue: PromiseQueue = PromiseQueue.createSimpleQueue(allFileHandledPromiseCreators, 10);
+        return promiseQueue.startQueue().then((): Record<string, string[]> => {
             return absoluteFilePathImportGraph;
         });
     }
