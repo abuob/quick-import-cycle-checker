@@ -81,7 +81,7 @@ export class GraphCreator {
     }
 
     private static parseRawImportLocation(absoluteFilePathOfImporter: string, rawImportLocation: string): ImportLocation {
-        if (/.json$/.test(rawImportLocation)) {
+        if (/[.]json$/.test(rawImportLocation)) {
             return {
                 type: 'json-module-import',
                 rawLiteral: rawImportLocation
